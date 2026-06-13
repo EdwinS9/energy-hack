@@ -14,6 +14,7 @@ export async function fetchEpisode(scenario: string, agent: string): Promise<Tra
   return r.json()
 }
 
+
 export interface ChaosFault {
   park: string
   step: number
