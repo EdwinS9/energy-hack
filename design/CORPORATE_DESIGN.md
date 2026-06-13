@@ -52,37 +52,42 @@ Version 1.0. This is the single source of truth for how Gauntlet looks, sounds, 
 
 ## 3. Color
 
-The system is a dark instrument panel. Backgrounds are near-black, structure is steel blue, and accents are reserved for meaning: amber for energy and the hero event, green for what was recovered, red for what was lost.
+The system is a dark solar-industrial panel. Backgrounds are near-black and warm, structure is gray, and the palette is closed: black, gray, white, orange, red. Orange is the sun (energy, and what was recovered), red is the bad day (loss and fault), white is the truth and the rival, gray is structure. This is the product palette of record; the product mirrors it in `theme/tokens.css` (see [UI_OVERHAUL.md](UI_OVERHAUL.md)).
 
 ### Core palette
 
 | Token | Hex | Role |
 |---|---|---|
-| `ink` | `#0B0F14` | Primary background (slides, app shell) |
-| `panel` | `#121821` | Cards, panels, raised surfaces |
-| `line` | `#1F2A37` | Borders, dividers, grid lines |
-| `text` | `#E6EDF3` | Primary text on dark |
-| `muted` | `#8B98A5` | Secondary text, captions, axis labels |
+| `bg` | `#0B0B0D` | Primary background (slides, app shell) |
+| `surface-1` | `#131316` | Cards, panels |
+| `surface-2` | `#1C1C21` | Raised surfaces, inputs, hover |
+| `line` | `#2A2A30` | Borders, dividers, grid lines |
+| `text` | `#F2F2F0` | Primary text on dark (warm white) |
+| `text-dim` | `#A8A29A` | Secondary text, captions, axis labels |
+| `neutral` | `#8A857C` | Baseline agents, structure |
 
-### Brand and semantic accents
+### Sun ramp and alert (the only hues)
 
 | Token | Hex | Meaning | Use |
 |---|---|---|---|
-| `primary` | `#2F81F7` | Trust, structure, the oracle/best line | Links, primary buttons, the benchmark line in charts |
-| `corona` | `#FFB020` | Energy, the eclipse, the hero accent | Headline highlights, the eclipse motif, score reveals |
-| `corona-hot` | `#FF8A00` | Intensified energy | Gradient endpoint, warnings |
-| `recover` | `#2EA043` | Recovered losses, pass | Pass badges, the recovered band, positive deltas |
-| `fault` | `#F85149` | Loss, fault, fail | Fail badges, fault markers, negative deltas |
+| `sun-100` | `#FFE3C2` | Pale energy | Lightest agent in the ramp, soft highlights |
+| `sun-300` | `#FFB066` | Warm energy | Mid agent, secondary accents |
+| `sun-500` | `#FF7A18` | Core brand orange, the sun | Primary buttons, the reference agent, recovered band, score reveals |
+| `sun-700` | `#C85A0E` | Deep energy | Hottest agent, deep accents |
+| `alert` | `#E5341E` | Loss and fault, a STATE | Fail badges, fault markers, negative deltas, chaos actions |
+| `alert-dim` | `#4A1A12` | Loss background | Fault-card and chaos-button backgrounds |
+| `white` | `#FFFFFF` | Max emphasis, the rival, the oracle | Sparingly: the benchmark line, the right fighter |
 
 ### Gradient
 
-**Corona gradient:** `#FF8A00` to `#FFD166`, 135 degrees. Reserved for hero moments only (title slide, the eclipse, the certified-score reveal). Never use it behind body text.
+**Sun gradient:** `#FF8A00` to `#FFD166`, 135 degrees. Reserved for hero moments only (title slide, the eclipse, the certified-score reveal). Never use it behind body text.
 
 ### Usage rules
-- One accent per view carries the meaning. Do not paint a slide in three accents at once.
-- Amber is precious. If everything glows, nothing reads as the signal.
-- Text contrast: `text` on `ink` and `panel` clears WCAG AA. Never set `muted` on `panel` for anything smaller than 13 px.
-- On light backgrounds (print, light certificate), invert: `ink` text on white, accents darkened one step for contrast.
+- One accent per view carries the meaning. Do not paint a slide in many accents at once.
+- Orange is precious. If everything glows, nothing reads as the signal.
+- Red is a state, never an identity. It means loss or fault, not "agent B."
+- Agent identity comes from value (the sun ramp), line style, and labels, not from new hues.
+- Text contrast: `text` on `bg` and `surface-1` clears WCAG AA. Never set `text-dim` on `surface-1` below 13 px.
 
 ---
 
@@ -126,7 +131,7 @@ Three families, each with a job. Headlines feel engineered, body stays neutral a
 - medal = the leaderboard
 - shield with a check = certified
 
-**Imagery direction.** Avoid the clichd stock photo of blue-sky solar panels. The visual world is dark and schematic: grid topology lines, charts as texture, the eclipse disc and its corona. Where a photograph is needed, apply a duotone of `ink` plus `corona` so it sits inside the system.
+**Imagery direction.** Avoid the clichd stock photo of blue-sky solar panels. The visual world is dark and schematic: grid topology lines, charts as texture, the eclipse disc and its corona. Where a photograph is needed, apply a duotone of `bg` plus `sun-500` so it sits inside the system.
 
 **The bad-day motif.** A faint Recovery Curve can run as a watermark across section dividers: the line dips, the recoverable band shades, the line climbs. It is the brand's heartbeat.
 
@@ -138,26 +143,28 @@ Charts are the product, so they are held to the highest standard. Gauntlet shows
 
 **The Recovery Curve (signature chart).**
 - X axis: time across the trading/operating day. Y axis: cumulative euro position.
-- `muted` floor line = the do-nothing or worst path.
-- `primary` line = the oracle (best achievable), the benchmark.
-- Per-agent line in its assigned color.
-- The band between floor and oracle is the recoverable money at stake, shaded faint `recover`.
-- Fault and weather-bust events drop a thin `fault` or `corona` vertical marker with a small icon.
+- `text-faint` floor line (dotted) = the do-nothing or worst path.
+- `white` line = the oracle (best achievable), the benchmark.
+- Per-agent line in its assigned value from the sun ramp.
+- The band between floor and oracle is the recoverable money at stake, shaded faint `sun-500`. The lost portion shades faint `alert`.
+- Fault events drop a thin `alert` vertical; the eclipse window is a faint `sun-500` glow band.
 
 **Leaderboard.**
-- Agent name with a color chip, score as a `recover`-to-`fault` bar, figures in Data M mono.
+- Agent name with a color chip, score as a `sun-500`-to-`alert` bar (warm = recovered, red = lost), figures in Data M mono.
 - P10 (tail risk) shown as a whisker behind the bar so the worst case is always visible next to the mean.
 - Always include the `noop` and `rules` baselines for context.
 
-**Agent color assignments (consistent everywhere):**
+**Agent color assignments (consistent everywhere). Identity is value plus line style plus label; red is never an agent.**
 
-| Agent | Color |
-|---|---|
-| `llm` (the brain) | `primary` `#2F81F7` |
-| `rules` (baseline) | `corona` `#FFB020` |
-| `noop` (floor) | `muted` `#8B98A5` |
-| `deepseek` | `#A371F7` (violet) |
-| `claude` | `#2EA043` (recover green) |
+| Agent | Color | Line |
+|---|---|---|
+| `llm` (the reference brain) | `sun-500` `#FF7A18` | solid |
+| `claude` | `white` `#F2F2F0` | solid |
+| `ds-cautious` | `sun-100` `#FFE3C2` | solid |
+| `ds-balanced` | `sun-300` `#FFB066` | solid |
+| `ds-aggressive` | `sun-700` `#C85A0E` | solid |
+| `rules` (baseline) | `neutral` `#8A857C` | dashed |
+| `noop` (floor) | `text-faint` `#6E6A62` | dotted |
 
 **Chart hygiene.** No 3D, no gradients inside data bars, no pie charts. Gridlines in `line` at low opacity. Label the unit once, clearly. The headline number sits above the chart in Data L mono.
 
@@ -165,7 +172,7 @@ Charts are the product, so they are held to the highest standard. Gauntlet shows
 
 ## 7. Product and presentation surfaces
 
-**App UI.** The product already lives in the dark instrument-panel world: `ink` shell, `panel` cards, mono metrics, the Test Lab and Arena views. New UI inherits the tokens above. Buttons: primary is `primary` fill with `ink` text; secondary is `line` border with `text` label.
+**App UI.** The product lives in the dark solar-industrial world: `bg` shell with a low sun-glow and grain, `surface-1` cards, mono metrics, the Test Lab and Arena views. New UI inherits the tokens above. Buttons: primary is `sun-500` fill with `bg` text; secondary is `line` border with `text` label that warms to `sun-500` on hover.
 
 **The certificate (the money artifact).** A dark card, mark-only seal top-left, the agent name, the headline score in Data L, a compact Recovery Curve thumbnail, the battery pass-rate and P10, the date and a reproducibility hash. This is the object the agent company puts in front of its customer, so it must look like it came from a lab, not a marketing team.
 
@@ -195,23 +202,23 @@ We sound like a test lab that respects the reader's time.
 
 ## 9. Applications checklist
 
-- **Pitch deck:** 16:9, `ink` master, see PITCH_DECK.md.
+- **Pitch deck:** 16:9, `bg` master, see PITCH_DECK.md.
 - **Certificate:** dark card, seal, score in mono, reproducibility hash.
 - **One-pager:** problem, the number (+30% converted ARR), the certificate, the ask.
-- **Social card:** mark + one stat in Data L on `ink` with a single Recovery Curve.
-- **README badge:** mark-only on `panel`, "Gauntlet-certified" in mono.
+- **Social card:** mark + one stat in Data L on `bg` with a single Recovery Curve.
+- **README badge:** mark-only on `surface-1`, "Gauntlet-certified" in mono.
 
 ---
 
 ## Quick reference (paste into any tool)
 
 ```
-COLORS
-ink      #0B0F14   panel  #121821   line   #1F2A37
-text     #E6EDF3   muted  #8B98A5
-primary  #2F81F7   corona #FFB020   corona-hot #FF8A00
-recover  #2EA043   fault  #F85149
-corona gradient: #FF8A00 -> #FFD166 @135deg (hero only)
+COLORS (closed palette: black, gray, white, orange, red)
+bg #0B0B0D  surface-1 #131316  surface-2 #1C1C21  line #2A2A30
+text #F2F2F0  text-dim #A8A29A  neutral #8A857C
+sun-100 #FFE3C2  sun-300 #FFB066  sun-500 #FF7A18  sun-700 #C85A0E
+alert #E5341E (loss/fault, a STATE)  white #FFFFFF (rival/oracle, sparingly)
+sun gradient: #FF8A00 -> #FFD166 @135deg (hero only)
 
 FONTS
 Headline: Space Grotesk (500/700)
@@ -220,5 +227,5 @@ Data:     JetBrains Mono (400/500/700)   <- all numbers
 
 MOTIF
 Recovery Curve: line dips on the bad day, recovers; band = money at stake.
-Numbers always mono. One accent per view. Amber is precious.
+Numbers always mono. One accent per view. Orange is precious. Red is a state, not an agent.
 ```
