@@ -31,7 +31,9 @@ export default function ArenaPane({
     <div className={`pane ${accent}`}>
       <div className="pane-title">
         {label}
-        {trace.totals.brain ? <span className="sub"> ({trace.totals.brain})</span> : null}
+        {trace.totals.brain && trace.totals.brain !== 'mock' ? (
+          <span className="sub"> ({trace.totals.brain})</span>
+        ) : null}
       </div>
       <ThreeCurveChart steps={trace.steps} playhead={playhead} showEclipse={scenario === 'S3'} height={210} compact />
       <div className="pane-score">
