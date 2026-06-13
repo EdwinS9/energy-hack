@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { fetchResults } from '../api'
+import { fetchResults, type DataSource } from '../api'
 import type { ResultRow } from '../types'
 
 const SCENARIO_LABELS: Record<string, string> = {
@@ -10,9 +10,11 @@ const SCENARIO_LABELS: Record<string, string> = {
 const AGENT_LABELS: Record<string, string> = {
   noop: 'Do nothing',
   rules: 'Rule-based',
-  llm: 'LLM worker',
+  llm: 'LLM worker (mock)',
+  deepseek: 'DeepSeek chat',
+  claude: 'Claude Sonnet',
 }
-const AGENT_ORDER = ['noop', 'rules', 'llm']
+const AGENT_ORDER = ['noop', 'rules', 'llm', 'deepseek', 'claude']
 const SCENARIO_ORDER = ['S1', 'S2', 'S3']
 
 function scoreClass(s: number): string {
@@ -21,18 +23,29 @@ function scoreClass(s: number): string {
   return 'bad'
 }
 
-export default function Leaderboard({ onOpen }: { onOpen: (sc: string, ag: string) => void }) {
+export default function Leaderboard({
+  onOpen,
+  data,
+}: {
+  onOpen: (sc: string, ag: string) => void
+  data: DataSource
+}) {
   const [rows, setRows] = useState<ResultRow[] | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchResults()
+    setRows(null)
+    setError(null)
+    fetchResults(data)
       .then((r) => setRows(r.results))
       .catch((e) => setError(String(e)))
-  }, [])
+  }, [data])
 
   if (error) return <div className="loading">Backend unreachable: {error}. Run `make demo`.</div>
   if (!rows) return <div className="loading">Loading leaderboard...</div>
+
+  const days = [...new Set(rows.map((r) => r.day).filter(Boolean))]
+  const presentAgents = AGENT_ORDER.filter((ag) => rows.some((r) => r.agent === ag))
 
   const cell = (sc: string, ag: string) => {
     const r = rows.find((x) => x.scenario === sc && x.agent === ag)
@@ -52,6 +65,11 @@ export default function Leaderboard({ onOpen }: { onOpen: (sc: string, ag: strin
             {Math.round(r.mc.p10 * 100)}%
           </div>
         )}
+        {r.brain && (
+          <div className="cost" style={{ color: '#58a6ff', fontSize: 11 }}>
+            {r.brain}
+          </div>
+        )}
       </td>
     )
   }
@@ -61,6 +79,13 @@ export default function Leaderboard({ onOpen }: { onOpen: (sc: string, ag: strin
       <p style={{ color: '#8b949e' }}>
         Recoverable losses recovered, per agent per bad day. Every score is bracketed between a
         perfect-foresight oracle (100%) and doing nothing (0%). Click a cell to replay the episode.
+        {data === 'real' && days.length > 0 && (
+          <>
+            {' '}
+            Real days: {days.join(' and ')} (Open-Meteo day-ahead forecasts vs archive, SMARD DE-LU
+            prices; S1 is a forecast bust that really happened).
+          </>
+        )}
       </p>
       <table className="board">
         <thead>
@@ -72,9 +97,9 @@ export default function Leaderboard({ onOpen }: { onOpen: (sc: string, ag: strin
           </tr>
         </thead>
         <tbody>
-          {AGENT_ORDER.map((ag) => (
+          {presentAgents.map((ag) => (
             <tr key={ag}>
-              <th>{AGENT_LABELS[ag]}</th>
+              <th>{AGENT_LABELS[ag] ?? ag}</th>
               {SCENARIO_ORDER.map((sc) => cell(sc, ag))}
             </tr>
           ))}

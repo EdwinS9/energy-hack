@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { simulate, type ChaosClouds, type ChaosFault, type HumanAction } from '../api'
+import { simulate, type ChaosClouds, type ChaosFault, type DataSource, type HumanAction } from '../api'
 import type { Trace } from '../types'
 import ArenaPane from './ArenaPane'
 
@@ -8,6 +8,11 @@ const CONTESTANTS: Record<string, string> = {
   llm: 'LLM WORKER',
   noop: 'DO NOTHING',
   human: 'YOU (judge)',
+}
+// Real-brain agents are precomputed only; arena live-sim is mock-only
+export const REAL_BRAIN_LABELS: Record<string, string> = {
+  deepseek: 'DEEPSEEK',
+  claude: 'CLAUDE',
 }
 const PARKS = ['zaragoza', 'valencia', 'munich']
 const SCENARIO_LABELS: Record<string, string> = {
@@ -18,7 +23,7 @@ const SCENARIO_LABELS: Record<string, string> = {
 
 type Side = 'left' | 'right'
 
-export default function Arena({ onBack }: { onBack: () => void }) {
+export default function Arena({ onBack, data }: { onBack: () => void; data: DataSource }) {
   const [scenario, setScenario] = useState('S3')
   const [fighters, setFighters] = useState<Record<Side, string>>({ left: 'rules', right: 'llm' })
   const [traces, setTraces] = useState<Record<Side, Trace | null>>({ left: null, right: null })
@@ -35,6 +40,7 @@ export default function Arena({ onBack }: { onBack: () => void }) {
       simulate({
         scenario,
         agent: fighters[side],
+        data,
         faults: chaosFaults,
         clouds: chaosClouds,
         human_actions: fighters[side] === 'human' ? humanActions[side] : [],
@@ -42,7 +48,7 @@ export default function Arena({ onBack }: { onBack: () => void }) {
         .then((t) => setTraces((prev) => ({ ...prev, [side]: t })))
         .catch(() => setTraces((prev) => ({ ...prev, [side]: null })))
     })
-  }, [scenario, fighters, chaosFaults, chaosClouds, humanActions])
+  }, [scenario, fighters, chaosFaults, chaosClouds, humanActions, data])
 
   useEffect(reload, [reload])
 
