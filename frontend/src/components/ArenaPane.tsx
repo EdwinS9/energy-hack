@@ -10,7 +10,7 @@ export default function ArenaPane({
 }: {
   trace: Trace | null
   playhead: number
-  accent: 'red' | 'blue'
+  accent: 'a' | 'b'
   label: string
   scenario: string
 }) {

@@ -10,6 +10,7 @@ import {
   YAxis,
 } from 'recharts'
 import type { StepRecord } from '../types'
+import { C } from '../theme/tokens'
 
 function hhmm(iso: string): string {
   return iso.slice(11, 16)
@@ -43,49 +44,54 @@ export default function ThreeCurveChart({
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: 0 }}>
-        <CartesianGrid stroke="#21262d" />
-        <XAxis dataKey="time" interval={11} stroke="#8b949e" fontSize={12} />
+        <CartesianGrid stroke={C.line} />
+        <XAxis dataKey="time" interval={11} stroke={C.textDim} fontSize={12} />
         <YAxis
-          stroke="#8b949e"
+          stroke={C.textDim}
           fontSize={12}
-          label={{ value: 'MW', angle: -90, position: 'insideLeft', fill: '#8b949e' }}
+          label={{ value: 'MW', angle: -90, position: 'insideLeft', fill: C.textDim }}
         />
-        <YAxis
-          yAxisId="price"
-          orientation="right"
-          stroke="#544"
-          fontSize={11}
-          domain={[0, 400]}
-          hide
-        />
+        {!compact && (
+          <YAxis
+            yAxisId="price"
+            orientation="right"
+            stroke={C.lineSoft}
+            fontSize={11}
+            domain={[0, 400]}
+            label={{ value: 'EUR/MWh', angle: 90, position: 'insideRight', fill: C.lineSoft }}
+          />
+        )}
         <Tooltip
-          contentStyle={{ background: '#161b22', border: '1px solid #30363d' }}
-          labelStyle={{ color: '#e6edf3' }}
+          contentStyle={{ background: C.surface1, border: `1px solid ${C.line}` }}
+          labelStyle={{ color: C.text }}
         />
         {!compact && <Legend />}
         {showEclipse && (
           <ReferenceArea
             x1="19:15"
             x2="21:15"
-            fill="#d29922"
-            fillOpacity={0.08}
-            stroke="#d29922"
-            strokeOpacity={0.3}
-            label={{ value: 'eclipse 19:20-21:10', position: 'insideTop', fill: '#d29922', fontSize: 12 }}
+            fill={C.sun500}
+            fillOpacity={0.1}
+            stroke={C.sun500}
+            strokeOpacity={0.35}
+            label={{ value: 'eclipse 19:20-21:10', position: 'insideTop', fill: C.sun300, fontSize: 12 }}
+          />
+        )}
+        {!compact && (
+          <Line
+            yAxisId="price"
+            dataKey="price"
+            name="DA price (EUR/MWh)"
+            stroke={C.textFaint}
+            strokeDasharray="2 3"
+            dot={false}
+            strokeWidth={1}
           />
         )}
         <Line
-          yAxisId="price"
-          dataKey="price"
-          name="DA price (EUR/MWh)"
-          stroke="#6e4046"
-          dot={false}
-          strokeWidth={1}
-        />
-        <Line
           dataKey="forecast"
           name="expected from forecast"
-          stroke="#8b949e"
+          stroke={C.neutral}
           strokeDasharray="6 4"
           dot={false}
           strokeWidth={1.5}
@@ -94,7 +100,7 @@ export default function ThreeCurveChart({
         <Line
           dataKey="schedule"
           name="scheduled (after trades)"
-          stroke="#3fb950"
+          stroke={C.sun500}
           type="stepAfter"
           dot={false}
           strokeWidth={1.5}
@@ -103,7 +109,7 @@ export default function ThreeCurveChart({
         <Line
           dataKey="weatherExpected"
           name="expected from actual weather"
-          stroke="#d29922"
+          stroke={C.sun300}
           dot={false}
           strokeWidth={1.5}
           isAnimationActive={false}
@@ -111,7 +117,7 @@ export default function ThreeCurveChart({
         <Line
           dataKey="actual"
           name="actual production"
-          stroke="#388bfd"
+          stroke={C.text}
           dot={false}
           strokeWidth={2.5}
           isAnimationActive={false}

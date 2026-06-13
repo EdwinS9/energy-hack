@@ -1,0 +1,46 @@
+/* Gauntlet | dark solar-industrial tokens. See design/UI_OVERHAUL.md. */
+:root {
+  /* base | near-black, warm */
+  --bg:         #0B0B0D;
+  --surface-1:  #131316;   /* cards, panels */
+  --surface-2:  #1C1C21;   /* raised, inputs, hover */
+  --line:       #2A2A30;   /* borders, dividers */
+  --line-soft:  #1F1F24;
+
+  /* text | warm */
+  --text:       #F2F2F0;   /* primary */
+  --text-dim:   #A8A29A;   /* secondary */
+  --text-faint: #6E6A62;   /* captions, the floor line */
+
+  /* gray neutral | baselines and structure */
+  --neutral:    #8A857C;
+
+  /* sun ramp | orange = energy, positive, recovered */
+  --sun-100:    #FFE3C2;
+  --sun-300:    #FFB066;
+  --sun-500:    #FF7A18;   /* core brand orange */
+  --sun-700:    #C85A0E;
+  --sun-glow:   rgba(255, 122, 24, 0.14);
+
+  /* alert | red = loss and fault, a STATE not an identity */
+  --alert:      #E5341E;
+  --alert-dim:  #4A1A12;
+
+  --white:      #FFFFFF;
+
+  /* motion */
+  --dur-micro:  200ms;
+  --dur-ui:     320ms;
+  --dur-count:  800ms;
+  --ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-io:    cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* shape and elevation */
+  --r-sm: 6px;  --r-md: 10px;  --r-lg: 16px;
+  --glow: 0 0 0 1px rgba(255,122,24,.22), 0 10px 34px rgba(255,122,24,.10);
+
+  /* type */
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, monospace;
+}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { fetchResults, type DataSource } from '../api'
 import type { ResultRow } from '../types'
+import AnimatedNumber from './AnimatedNumber'
 
 const SCENARIO_LABELS: Record<string, string> = {
   S1: 'S1 Cloud front bust',
@@ -64,7 +65,9 @@ export default function Leaderboard({
     if (!r) return <td key={sc} />
     return (
       <td key={sc} className="cell" onClick={() => onOpen(sc, ag)} title="click to replay">
-        <div className={`score ${scoreClass(r.score)}`}>{Math.round(r.score * 100)}%</div>
+        <div className={`score ${scoreClass(r.score)}`}>
+          <AnimatedNumber value={r.score * 100} format={(n) => `${Math.round(n)}%`} />
+        </div>
         <div className="cost">{Math.round(r.cost_eur).toLocaleString()} EUR lost</div>
         {r.false_dispatches > 0 && (
           <div className="flag">
@@ -77,18 +80,14 @@ export default function Leaderboard({
             {Math.round(r.mc.p10 * 100)}%
           </div>
         )}
-        {r.brain && (
-          <div className="cost" style={{ color: '#58a6ff', fontSize: 11 }}>
-            {r.brain}
-          </div>
-        )}
+        {r.brain && <div className="brain-tag">{r.brain}</div>}
       </td>
     )
   }
 
   return (
     <div>
-      <p style={{ color: '#8b949e' }}>
+      <p style={{ color: 'var(--text-dim)' }}>
         Recoverable losses recovered, per agent per bad day. Every score is bracketed between a
         perfect-foresight oracle (100%) and doing nothing (0%). Click a cell to replay the episode.
         {data === 'real' && days.length > 0 && (

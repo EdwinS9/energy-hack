@@ -15,7 +15,7 @@ export default function ActionCards({
 }) {
   const visible = actions.filter((a) => a.k <= playhead).reverse()
   if (visible.length === 0) {
-    return <div className="cards" style={{ color: '#8b949e' }}>No actions yet.</div>
+    return <div className="cards" style={{ color: 'var(--text-dim)' }}>No actions yet.</div>
   }
   return (
     <div className="cards">

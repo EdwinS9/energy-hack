@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { simulate, type ChaosClouds, type ChaosFault, type DataSource, type HumanAction } from '../api'
+import { motion, useReducedMotion } from 'framer-motion'
+import { simulate, STATIC_MODE, type ChaosClouds, type ChaosFault, type DataSource, type HumanAction } from '../api'
 import type { Trace } from '../types'
+import AnimatedNumber from './AnimatedNumber'
 import ArenaPane from './ArenaPane'
 
 const CONTESTANTS: Record<string, string> = {
@@ -9,6 +11,9 @@ const CONTESTANTS: Record<string, string> = {
   noop: 'DO NOTHING',
   human: 'YOU (judge)',
 }
+// In the hosted static build there is no live backend, so the human judge
+// (which needs /simulate) is not selectable.
+const CONTESTANT_OPTIONS = Object.entries(CONTESTANTS).filter(([k]) => !(STATIC_MODE && k === 'human'))
 // Real-brain agents are precomputed only; arena live-sim is mock-only
 export const REAL_BRAIN_LABELS: Record<string, string> = {
   deepseek: 'DEEPSEEK',
@@ -33,7 +38,9 @@ export default function Arena({ onBack, data }: { onBack: () => void; data: Data
   const [chaosPark, setChaosPark] = useState('valencia')
   const [playhead, setPlayhead] = useState(0)
   const [playing, setPlaying] = useState(false)
+  const [countdown, setCountdown] = useState<number | null>(null)
   const timer = useRef<number | null>(null)
+  const reduce = useReducedMotion()
 
   const reload = useCallback(() => {
     ;(['left', 'right'] as Side[]).forEach((side) => {
@@ -69,6 +76,28 @@ export default function Arena({ onBack, data }: { onBack: () => void; data: Data
     }
   }, [playing])
 
+  useEffect(() => {
+    if (countdown === null) return
+    if (countdown === 0) {
+      const t = window.setTimeout(() => {
+        setCountdown(null)
+        setPlaying(true)
+      }, 450)
+      return () => window.clearTimeout(t)
+    }
+    const t = window.setTimeout(() => setCountdown((c) => (c === null ? null : c - 1)), 700)
+    return () => window.clearTimeout(t)
+  }, [countdown])
+
+  const startPlay = () => {
+    if (playing) {
+      setPlaying(false)
+      return
+    }
+    if (playhead === 0 && !reduce) setCountdown(3)
+    else setPlaying(true)
+  }
+
   const resetEpisode = (sc: string) => {
     setScenario(sc)
     setChaosFaults([])
@@ -76,6 +105,7 @@ export default function Arena({ onBack, data }: { onBack: () => void; data: Data
     setHumanActions({ left: [], right: [] })
     setPlayhead(0)
     setPlaying(false)
+    setCountdown(null)
   }
 
   const faultUsed = (park: string) => chaosFaults.some((f) => f.park === park) || (scenario === 'S2' && park === 'zaragoza')
@@ -109,18 +139,28 @@ export default function Arena({ onBack, data }: { onBack: () => void; data: Data
   }
 
   const finished = playhead === 95 && traces.left && traces.right
-  let banner = null
+  let winnerNode = null
   if (finished) {
     const l = traces.left!.totals.cost_eur
     const r = traces.right!.totals.cost_eur
     const tie = Math.abs(l - r) < 1
     const winner = l < r ? 'left' : 'right'
-    banner = tie ? (
-      <div className="winner-banner tie">DRAW</div>
-    ) : (
-      <div className={`winner-banner ${winner}`}>
-        {CONTESTANTS[fighters[winner]]} WINS | saves {Math.round(Math.abs(l - r)).toLocaleString()} EUR over the rival
-      </div>
+    const margin = Math.abs(l - r)
+    winnerNode = (
+      <motion.div
+        className={`winner-banner ${tie ? 'tie' : winner}`}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      >
+        {tie ? (
+          'DRAW'
+        ) : (
+          <>
+            {CONTESTANTS[fighters[winner]]} WINS | saves <AnimatedNumber value={margin} /> EUR over the rival
+          </>
+        )}
+      </motion.div>
     )
   }
 
@@ -134,7 +174,28 @@ export default function Arena({ onBack, data }: { onBack: () => void; data: Data
     )
 
   return (
-    <div>
+    <div className="arena">
+      {countdown !== null && (
+        <motion.div
+          className="countdown"
+          onClick={() => {
+            setCountdown(null)
+            setPlaying(true)
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <motion.span
+            key={countdown}
+            className={countdown > 0 ? 'n' : 'go'}
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {countdown > 0 ? countdown : 'GO'}
+          </motion.span>
+        </motion.div>
+      )}
       <div className="replay-head">
         <button onClick={onBack}>&larr; leaderboard</button>
         <h2 style={{ margin: 0 }}>ARENA</h2>
@@ -149,14 +210,14 @@ export default function Arena({ onBack, data }: { onBack: () => void; data: Data
 
       <div className="vs-row">
         <select
-          className="fighter red"
+          className="fighter a"
           value={fighters.left}
           onChange={(e) => {
             setFighters((p) => ({ ...p, left: e.target.value }))
             setHumanActions((p) => ({ ...p, left: [] }))
           }}
         >
-          {Object.entries(CONTESTANTS).map(([k, v]) => (
+          {CONTESTANT_OPTIONS.map(([k, v]) => (
             <option key={k} value={k}>
               {v}
             </option>
@@ -164,14 +225,14 @@ export default function Arena({ onBack, data }: { onBack: () => void; data: Data
         </select>
         <span className="vs">VS</span>
         <select
-          className="fighter blue"
+          className="fighter b"
           value={fighters.right}
           onChange={(e) => {
             setFighters((p) => ({ ...p, right: e.target.value }))
             setHumanActions((p) => ({ ...p, right: [] }))
           }}
         >
-          {Object.entries(CONTESTANTS).map(([k, v]) => (
+          {CONTESTANT_OPTIONS.map(([k, v]) => (
             <option key={k} value={k}>
               {v}
             </option>
@@ -179,21 +240,21 @@ export default function Arena({ onBack, data }: { onBack: () => void; data: Data
         </select>
       </div>
 
-      {banner}
+      {winnerNode}
 
       <div className="arena-grid">
         <div>
-          <ArenaPane trace={traces.left} playhead={playhead} accent="red" label={CONTESTANTS[fighters.left]} scenario={scenario} />
+          <ArenaPane trace={traces.left} playhead={playhead} accent="a" label={CONTESTANTS[fighters.left]} scenario={scenario} />
           {sideControls('left')}
         </div>
         <div>
-          <ArenaPane trace={traces.right} playhead={playhead} accent="blue" label={CONTESTANTS[fighters.right]} scenario={scenario} />
+          <ArenaPane trace={traces.right} playhead={playhead} accent="b" label={CONTESTANTS[fighters.right]} scenario={scenario} />
           {sideControls('right')}
         </div>
       </div>
 
       <div className="transport">
-        <button onClick={() => setPlaying(!playing)}>{playing ? 'pause' : 'play'}</button>
+        <button onClick={startPlay}>{playing ? 'pause' : 'play'}</button>
         <span className="clock">{traces.left?.steps[playhead]?.time.slice(11, 16) ?? '--:--'}</span>
         <input
           type="range"
@@ -208,25 +269,31 @@ export default function Arena({ onBack, data }: { onBack: () => void; data: Data
         <button onClick={() => resetEpisode(scenario)}>reset</button>
       </div>
 
-      <div className="chaos-bar">
-        <span className="label">CHAOS:</span>
-        <select value={chaosPark} onChange={(e) => setChaosPark(e.target.value)}>
-          {PARKS.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
-        <button className="chaos" onClick={injectFault} disabled={faultUsed(chaosPark)}>
-          BREAK AN INVERTER NOW
-        </button>
-        <button className="chaos" onClick={injectClouds}>
-          CLOUD FRONT NOW +3h
-        </button>
-        <span className="sub">
-          both fighters face the same chaos; the day re-simulates instantly
-        </span>
-      </div>
+      {!STATIC_MODE ? (
+        <div className="chaos-bar">
+          <span className="label">CHAOS:</span>
+          <select value={chaosPark} onChange={(e) => setChaosPark(e.target.value)}>
+            {PARKS.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+          <button className="chaos" onClick={injectFault} disabled={faultUsed(chaosPark)}>
+            BREAK AN INVERTER NOW
+          </button>
+          <button className="chaos" onClick={injectClouds}>
+            CLOUD FRONT NOW +3h
+          </button>
+          <span className="sub">both fighters face the same chaos; the day re-simulates instantly</span>
+        </div>
+      ) : (
+        <div className="chaos-bar">
+          <span className="sub">
+            Hosted demo: this duel replays precomputed bad days. Live chaos injection runs in the local build.
+          </span>
+        </div>
+      )}
     </div>
   )
 }

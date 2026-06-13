@@ -1,16 +1,27 @@
 import type { Results, Trace } from './types'
 
-// Same-origin (relative) in the production build served by FastAPI; explicit
-// localhost:8000 in dev so the Vite server on :5173 reaches the API on :8000.
 const env = (import.meta as any).env
 const API = env?.VITE_API_URL ?? (env?.PROD ? '' : 'http://localhost:8000')
+// Static deploy reads JSON baked under /data instead of calling the Python
+// backend. Opt in explicitly with VITE_STATIC=1 at build time (the Vercel
+// deploy). Live /simulate, chaos injection and on-the-fly reports are
+// unavailable then (the Arena replays precomputed base episodes). Local
+// `make demo` and `make ui` leave it unset, so they use the live backend.
+export const STATIC_MODE: boolean = env?.VITE_STATIC === '1'
+const DATA = `${env?.BASE_URL ?? '/'}data`
+const sub = (data: DataSource) => (data === 'real' ? 'real/' : '')
+
+async function getJson<T>(url: string, what: string): Promise<T> {
+  const r = await fetch(url)
+  if (!r.ok) throw new Error(`${what}: ${r.status}`)
+  return r.json() as Promise<T>
+}
 
 export type DataSource = 'synthetic' | 'real'
 
 export async function fetchResults(data: DataSource = 'synthetic'): Promise<Results> {
-  const r = await fetch(`${API}/results?data=${data}`)
-  if (!r.ok) throw new Error(`results: ${r.status}`)
-  return r.json()
+  if (STATIC_MODE) return getJson(`${DATA}/${sub(data)}results.json`, 'results')
+  return getJson(`${API}/results?data=${data}`, 'results')
 }
 
 export async function fetchEpisode(
@@ -18,11 +29,9 @@ export async function fetchEpisode(
   agent: string,
   data: DataSource = 'synthetic',
 ): Promise<Trace> {
-  const r = await fetch(`${API}/episodes/${scenario}/${agent}?data=${data}`)
-  if (!r.ok) throw new Error(`episode: ${r.status}`)
-  return r.json()
+  if (STATIC_MODE) return getJson(`${DATA}/${sub(data)}${scenario}_${agent}.json`, 'episode')
+  return getJson(`${API}/episodes/${scenario}/${agent}?data=${data}`, 'episode')
 }
-
 
 export interface ChaosFault {
   park: string
@@ -54,6 +63,9 @@ export interface SimRequest {
 }
 
 export async function simulate(req: SimRequest): Promise<Trace> {
+  // Static deploy has no live backend: replay the precomputed base episode.
+  // Chaos and human actions are ignored (and their controls are hidden).
+  if (STATIC_MODE) return fetchEpisode(req.scenario, req.agent, req.data ?? 'synthetic')
   const r = await fetch(`${API}/simulate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -101,20 +113,18 @@ export interface Battery {
 }
 
 export function reportCsvUrl(mode: string): string {
-  return `${API}/report/battery/${mode}.csv`
+  return STATIC_MODE ? `${DATA}/report/${mode}.csv` : `${API}/report/battery/${mode}.csv`
 }
 export function reportPdfUrl(mode: string): string {
-  return `${API}/report/battery/${mode}.pdf`
+  return STATIC_MODE ? `${DATA}/report/${mode}.pdf` : `${API}/report/battery/${mode}.pdf`
 }
 
 export async function fetchBatteryModes(): Promise<string[]> {
-  const r = await fetch(`${API}/batteries`)
-  if (!r.ok) throw new Error(`batteries: ${r.status}`)
-  return (await r.json()).modes
+  if (STATIC_MODE) return (await getJson<{ modes: string[] }>(`${DATA}/batteries.json`, 'batteries')).modes
+  return (await getJson<{ modes: string[] }>(`${API}/batteries`, 'batteries')).modes
 }
 
 export async function fetchBattery(mode: string): Promise<Battery> {
-  const r = await fetch(`${API}/battery/${mode}`)
-  if (!r.ok) throw new Error(`battery: ${r.status}`)
-  return r.json()
+  if (STATIC_MODE) return getJson(`${DATA}/battery/${mode}.json`, 'battery')
+  return getJson(`${API}/battery/${mode}`, 'battery')
 }

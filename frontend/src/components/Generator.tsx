@@ -21,6 +21,7 @@ import {
   type BatteryCase,
   type WorkerInfo,
 } from '../api'
+import { agentColor, scoreColor } from '../theme/tokens'
 
 const MODE_LABELS: Record<string, string> = {
   discrimination: 'DISCRIMINATION',
@@ -35,15 +36,6 @@ const MODE_BLURB: Record<string, string> = {
   adversarial_llm:
     'The search pointed at the LLM worker: the days that beat even the smart agent. These are where you would harden it next.',
 }
-const WORKER_COLOR: Record<string, string> = {
-  noop: '#8b949e',
-  rules: '#f85149',
-  llm: '#3fb950',
-  claude: '#cc785c',
-  'ds-cautious': '#58a6ff',
-  'ds-balanced': '#a371f7',
-  'ds-aggressive': '#d29922',
-}
 const SHORT: Record<string, string> = {
   rules: 'Rules',
   llm: 'Reference',
@@ -54,13 +46,8 @@ const SHORT: Record<string, string> = {
 }
 const CATEGORY_ORDER = ['FAULT', 'WEATHER', 'ECLIPSE', 'COMBO']
 
-const color = (id: string) => WORKER_COLOR[id] ?? '#888'
+const color = agentColor
 const pct = (x: number) => `${Math.round(x * 100)}%`
-function scoreColor(s: number): string {
-  if (s >= 0.5) return '#3fb950'
-  if (s > 0.15) return '#d29922'
-  return '#f85149'
-}
 
 export default function Generator({ onBack }: { onBack: () => void }) {
   const [modes, setModes] = useState<string[]>([])
@@ -94,14 +81,6 @@ export default function Generator({ onBack }: { onBack: () => void }) {
         </h2>
       </div>
 
-      <p style={{ color: '#8b949e', maxWidth: 820 }}>
-        Anyone can run an agent on one scripted bad day. Gauntlet generates a battery of them: a
-        seeded evolutionary search over weather busts, silent faults, eclipse overlays and price
-        regimes, keeping the days with the most recoverable money at stake that best separate a good
-        agent from a bad one. Then it pits several workers against the same battery and scores them
-        on the worst case, not the average.
-      </p>
-
       <div className="gen-toolbar">
         <div className="gen-modes">
           {modes.map((m) => (
@@ -131,7 +110,7 @@ export default function Generator({ onBack }: { onBack: () => void }) {
 
       {battery && (
         <>
-          <p style={{ color: '#8b949e', fontStyle: 'italic', marginTop: 8 }}>
+          <p style={{ color: '#A8A29A', fontStyle: 'italic', marginTop: 8 }}>
             {MODE_BLURB[mode]} {battery.k} days; deterministic workers averaged over {battery.mc_n}{' '}
             Monte-Carlo variations
             {battery.persona_single_run ? ', real models (Claude, DeepSeek) one run per day (API-bound)' : ''}.
@@ -213,11 +192,11 @@ function Comparison({ battery }: { battery: Battery }) {
           <div className="chart-title">Recovery by failure mode</div>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={barData} margin={{ top: 8, right: 8, bottom: 4, left: -18 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
-              <XAxis dataKey="category" tick={{ fill: '#8b949e', fontSize: 12 }} />
-              <YAxis domain={[0, 100]} tick={{ fill: '#8b949e', fontSize: 11 }} unit="%" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#2A2A30" />
+              <XAxis dataKey="category" tick={{ fill: '#A8A29A', fontSize: 12 }} />
+              <YAxis domain={[0, 100]} tick={{ fill: '#A8A29A', fontSize: 11 }} unit="%" />
               <Tooltip
-                contentStyle={{ background: '#0d1117', border: '1px solid #30363d' }}
+                contentStyle={{ background: '#0B0B0D', border: '1px solid #2A2A30' }}
                 formatter={(v: number, id: string) => [
                   `${v}%`,
                   battery.workers.find((w) => w.id === id)?.label ?? id,
@@ -235,28 +214,28 @@ function Comparison({ battery }: { battery: Battery }) {
           <div className="chart-title">Risk vs return</div>
           <ResponsiveContainer width="100%" height={260}>
             <ScatterChart margin={{ top: 8, right: 12, bottom: 18, left: -8 }}>
-              <CartesianGrid stroke="#21262d" />
+              <CartesianGrid stroke="#2A2A30" />
               <XAxis
                 type="number"
                 dataKey="x"
                 domain={[0, 100]}
                 name="pass-rate"
                 unit="%"
-                tick={{ fill: '#8b949e', fontSize: 11 }}
-                label={{ value: 'pass-rate (reward)', position: 'bottom', fill: '#8b949e', fontSize: 11 }}
+                tick={{ fill: '#A8A29A', fontSize: 11 }}
+                label={{ value: 'pass-rate (reward)', position: 'bottom', fill: '#A8A29A', fontSize: 11 }}
               />
               <YAxis
                 type="number"
                 dataKey="y"
                 name="P10"
                 unit="%"
-                tick={{ fill: '#8b949e', fontSize: 11 }}
-                label={{ value: 'P10 (tail safety)', angle: -90, position: 'insideLeft', fill: '#8b949e', fontSize: 11 }}
+                tick={{ fill: '#A8A29A', fontSize: 11 }}
+                label={{ value: 'P10 (tail safety)', angle: -90, position: 'insideLeft', fill: '#A8A29A', fontSize: 11 }}
               />
               <ZAxis range={[120, 120]} />
               <Tooltip
                 cursor={{ strokeDasharray: '3 3' }}
-                contentStyle={{ background: '#0d1117', border: '1px solid #30363d' }}
+                contentStyle={{ background: '#0B0B0D', border: '1px solid #2A2A30' }}
                 formatter={(v: number) => `${v}%`}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />

@@ -59,7 +59,7 @@ export default function Replay({
         <h2 style={{ margin: 0 }}>
           {scenario} / {agent}
         </h2>
-        <span style={{ color: '#8b949e' }}>
+        <span style={{ color: 'var(--text-dim)' }}>
           score {Math.round(trace.totals.score * 100)}%
           {trace.totals.brain ? ` | brain: ${trace.totals.brain}` : ''}
         </span>
