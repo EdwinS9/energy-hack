@@ -159,20 +159,21 @@ Recovery Curve watermark allowed faint on section breaks.
 
 ---
 
-## Slide 8 | The ask and close
+## Slide 8 | Close: the bad day is dated
 
-- **Goal:** dual close. Win the room today, open the raise conversation.
-- **Layout:** centered. Headline, then two short asks, then the vision line. Logo lockup at the base.
-- **Eyebrow:** THE ASK
-- **Headline:** "Help us certify the agents the grid is about to trust."
-- **Asks (two lines, mono labels):**
-  - "Today: the strongest validation layer in the room. Vote Gauntlet."
-  - "Next: we are opening conversations with design partners to certify the first agents before the 2027 eclipse." 
-- **Vision line:** "Every autonomous agent on the European grid should carry a score before it is allowed to act. We issue it."
-- **Visual:** logo lockup, faint Recovery Curve recovering to a peak on the right (ending on an up-note).
-- **Data:** none. The forward-looking line carries it.
-- **Notes (~15s):** "Agents are about to run the European grid. They should have to prove they survive the bad day first. Gauntlet is the proving ground that makes them. Today, we are asking for your vote, and to start the conversation with the design partners who feel the 2027 eclipse coming. Thank you."
-- **Design:** `ink`. Accent `recover` on the closing curve. Corona gradient on the logo mark.
+- **Goal:** leave one clean, urgent impression (the bad day is on the calendar) and a low-pressure invitation to talk. No vote, no fundraise. The audience should remember us and know how to find us.
+- **Layout:** centered. Eyebrow top. The two dates large in Data L mono, side by side, with a faint eclipse disc behind them. One subhead line, one forward line, one soft invitation. Footer strip with the live demo link and team contact. Logo lockup and tagline at the base.
+- **Eyebrow:** THE CLOCK
+- **Headline (two dates, Data L mono):** "12 Aug 2026  /  2 Aug 2027"
+- **Subhead:** "The bad day is on the calendar. The next one is bigger."
+- **Forward line:** "By then, autonomous agents will be steering the grid. Gauntlet makes sure they are ready."
+- **Invitation (soft, no ask):** "If you build or rely on energy agents, come find us. We will show you, in euros, what their bad day costs."
+- **Footer (mono, placeholders to fill):** "Live demo: [demo URL or QR]   |   [Name] . [email or handle]"
+- **Tagline (sign-off):** logo lockup above "The proving ground for autonomous energy agents."
+- **Visual:** faint eclipse disc (corona gradient ring) behind the two dates. A thin Recovery Curve along the base recovering to a peak on the right, ending on an up-note.
+- **Data:** the two dates.
+- **Notes (~15s):** "The bad day is not hypothetical. It is on the calendar: this August, and a bigger one in 2027. By then, agents will be steering the grid. Gauntlet is the proving ground that makes sure they are ready. If you build or rely on energy agents, come talk to us. We will show you, in euros, what their bad day costs."
+- **Design:** `ink`. Hero accent: corona gradient on the eclipse disc and the two dates. `recover` on the closing curve. Keep it lean, no clutter.
 
 ---
 
@@ -327,4 +328,5 @@ Use these when the deck is read by investors or shown in a longer meeting. They 
 - [ ] Real team names, roles, credentials (A7).
 - [ ] Confirm with the organizers that naming Invertix on the money slide (slide 7) is welcome. If not, switch slide 7 to "a leading EU agent company" with the same numbers.
 - [ ] High-resolution demo screenshot or a confirmed live-demo window for slide 5.
+- [ ] Live demo URL or QR and a team contact (name plus email or handle) for the closing slide (slide 8).
 - [ ] Re-run `make battery` and confirm the slide 6 numbers (55% / 8% / P10 10% / 49% to 30%) still match.
