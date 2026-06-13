@@ -2,7 +2,23 @@
 
 Done so far: full gym (SPEC.md + DEVPLAN.md, M1-M8), arena mode with chaos
 injection and judge-plays-it, real-data layer (Open-Meteo + SMARD) behind the
-SYNTHETIC/REAL toggle.
+SYNTHETIC/REAL toggle, DeepSeek as a real leaderboard contestant, and the
+intelligent test-case generator (genome + fitness + evolutionary search +
+diversity selection + battery report; discrimination and adversarial modes;
+opt-in LLM red-team author). Backend done and gated; UI tab is the open piece.
+
+## Generator: remaining
+
+- UI: a GENERATOR/BATTERY tab. Show the curated battery (cards by failure-mode
+  label + stake), the per-agent certification report (pass-rate bar + worst-case
+  P10), the 'hardest day that breaks each agent' callout, and a discrimination
+  vs adversarial toggle. A 'regenerate' button can hit a backend generate
+  endpoint (deterministic, fast) or just switch among precomputed batteries.
+- Optional: let a generated battery case open in the existing replay view
+  (compile genome -> scenario -> trace on demand).
+- Optional: richer genome (multi-fault days, partial-string faults, ramp events)
+  so the evolutionary search has more room to beat random than in today's
+  compact space.
 
 ## Priority 2: real LLMs
 

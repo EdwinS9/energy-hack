@@ -53,6 +53,25 @@ def episode(scenario: str, agent: str, data: str = "synthetic"):
     return json.loads(f.read_text())
 
 
+@app.get("/batteries")
+def batteries():
+    """List the generated batteries available to the UI."""
+    d = REPO_ROOT / "traces" / "battery"
+    if not d.exists():
+        return {"modes": []}
+    return {"modes": sorted(f.stem for f in d.glob("*.json"))}
+
+
+@app.get("/battery/{mode}")
+def battery(mode: str):
+    """One generated battery (cases + per-agent tail-risk report). Precomputed,
+    offline; generation itself runs via `python -m gauntlet.generate`."""
+    f = REPO_ROOT / "traces" / "battery" / f"{mode.replace(':', '_')}.json"
+    if not f.exists():
+        raise HTTPException(404, f"no battery '{mode}': run `make battery`")
+    return json.loads(f.read_text())
+
+
 class ChaosFault(BaseModel):
     park: str
     step: int = Field(ge=0, le=N_STEPS - 1)

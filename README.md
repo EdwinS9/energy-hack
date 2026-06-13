@@ -25,6 +25,32 @@ refresh or re-pick days with `make fetch-data` (network, once), then
 `make traces-real`. Negative real prices are floored to 1 EUR/MWh in settlement
 (displayed unfloored); see TODO.md.
 
+## Intelligent test-case generator
+
+Beyond the three hand-authored bad days, Gauntlet generates a battery of them. A
+test case is a parameter vector (weather busts, an optional silent fault, an
+eclipse overlay, a price regime). A seeded evolutionary search maximizes a
+fitness that rewards recoverable money at stake (floor minus oracle, which the
+product already computes) AND how far the day separates a competent agent panel,
+then diversity-selects a battery spread across failure modes. So the cases are
+hard and discriminating by construction, not random jitter around one archetype.
+
+Each case is Monte-Carlo'd; the report is pass-rate plus worst-case P10 (tail
+risk) per agent, and the single hardest day for each. `make battery` builds the
+deterministic discrimination and adversarial batteries.
+
+```
+python -m gauntlet.generate                              # discrimination battery
+python -m gauntlet.generate --mode adversarial --target rules   # break one agent
+python -m gauntlet.generate --redteam                    # LLM proposes seed cases (needs a key)
+```
+
+Discrimination mode is agent-agnostic (find days that separate good from bad);
+adversarial mode points the same search at one agent and mines its failures. The
+`--redteam` author proposes novel cases as search seeds; everything it proposes
+still has to survive the fitness function. Generation is deterministic given a
+seed; gating tests run on the mock substrate (no API).
+
 ## Real LLM brains
 
 By default the LLM worker runs a deterministic mock (offline, reproducible).

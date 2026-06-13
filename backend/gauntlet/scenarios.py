@@ -186,6 +186,55 @@ def _s3_real(rng: np.random.Generator, seed: int) -> Scenario:
     )
 
 
+# ---------- generated (from a genome) ----------
+
+def build_from_genome(g, seed: int = 0, name: str | None = None) -> Scenario:
+    """Compile a CaseGenome into a runnable Scenario on the synthetic substrate.
+
+    forecast starts at clear-sky (the day-ahead commitment). A shortfall bust
+    pulls twin (realized) below it; a surplus bust pulls forecast below an
+    unchanged twin (the day-ahead under-predicted). The fault stays in
+    scenario.fault so the engine derives actual from twin minus fault.
+    """
+    forecast, twin = {}, {}
+    for pid in PARK_IDS:
+        clear = _clear_power(pid)
+        forecast[pid] = clear.copy()
+        twin[pid] = clear.copy()
+    for b in g.busts:
+        start_min, end_min = b.start * 15 + 7.5, b.end * 15 + 7.5
+        factor = weather.ramp_window(start_min, end_min, 1.0 - b.depth)
+        if b.sign > 0:
+            twin[b.park] = twin[b.park] * factor          # realized worse than forecast
+        else:
+            forecast[b.park] = forecast[b.park] * factor  # forecast under-predicted the sun
+
+    known_events, onset = [], 0
+    if g.eclipse:
+        for pid in PARK_IDS:
+            twin[pid] = twin[pid] * (1.0 - eclipse.obscuration(pid))
+        known_events = _eclipse_events()
+        onset = int(eclipse.WINDOW_START_MIN // 15)
+
+    fault = None
+    if g.fault:
+        fault = {"park": g.fault.park, "onset_step": g.fault.onset, "magnitude": g.fault.magnitude}
+        onset = onset or g.fault.onset
+    if not onset and g.busts:
+        onset = min(b.start for b in g.busts)
+
+    da = da_price_curve("S1")
+    if g.price_spike > 1.0:
+        for k in range(len(da)):
+            if 19.5 <= k * 0.25 < 21.0:
+                da[k] = da[k] * g.price_spike
+    return Scenario(
+        name=name or "GEN", seed=seed, da_price=da,
+        forecast=forecast, twin=twin, fault=fault,
+        known_events=known_events, event_onset_step=onset,
+    )
+
+
 # ---------- shared ----------
 
 def _fault_draw(rng: np.random.Generator) -> tuple[int, float]:
